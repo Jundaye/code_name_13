@@ -17,7 +17,9 @@
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"
 	integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
 	crossorigin="anonymous">
+	
 </script>
+
 
 <style type="text/css">
 #btnLike {
@@ -35,6 +37,7 @@
 <body>
 
 	<div align="center">
+
 
 		<H2>게시글 상세보기</H2>
 
@@ -191,10 +194,7 @@
 
 	<script type="text/javascript">
 		// 현재 게시글 번호
-		let boardId = $
-		{
-			board.boardId
-		};
+		let boardId = ${board.boardId};
 
 		// =====================================
 		// 좋아요
@@ -203,7 +203,6 @@
 		$("#btnLike").on("click", function() {
 
 			$.post("like.do",
-
 			{
 				boardId : boardId
 			},
