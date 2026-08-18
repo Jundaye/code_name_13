@@ -10,19 +10,115 @@
 
 <title>게시글 수정</title>
 
-<link
-	href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
-	rel="stylesheet">
+<!-- ========================================== -->
+<!-- 🎨 디자인(CSS) 영역: PC통신 레트로 스타일 적용 -->
+<!-- ========================================== -->
+<style type="text/css">
+    /* 레트로 픽셀 폰트 적용 */
+    @import url('https://cdn.jsdelivr.net/gh/neodgm/neodgm-webfont@1.530/neodgm/style.css');
+
+    * { box-sizing: border-box; }
+
+    /* 바탕 및 기본 글꼴 설정 */
+    body {
+        font-family: 'NeoDunggeunmo', '돋움', Dotum, monospace;
+        background-color: #0000AA; /* 진파랑 배경 */
+        color: #FFFFFF; /* 흰색 글씨 */
+        line-height: 1.6;
+        padding: 30px;
+    }
+
+    ::selection { background: #FFFFFF; color: #0000AA; }
+
+    /* 메인 컨테이너 */
+    .container {
+        max-width: 800px;
+        margin: 0 auto;
+        border: 2px solid #FFFFFF;
+        padding: 40px;
+        background: #0000AA;
+        box-shadow: 5px 5px 0px #000000;
+    }
+
+    /* 제목 스타일 */
+    h1 {
+        color: #FFFF00;
+        text-shadow: 2px 2px #000000;
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    h1::before, h1::after { content: ' === '; color: #00FFFF; }
+
+    /* 에러 메시지 스타일 */
+    .alert {
+        border: 1px dashed #FFFF00;
+        color: #FFFF00;
+        padding: 15px;
+        margin-bottom: 25px;
+        text-align: center;
+        background-color: #000055;
+    }
+
+    /* 입력 폼 그룹 영역 */
+    .form-group { margin-bottom: 25px; }
+    
+    label { 
+        display: block; 
+        color: #00FFFF; 
+        margin-bottom: 8px; 
+        font-size: 1.1rem; 
+    }
+    label::before { content: '▶ '; color: #FFFF00; }
+
+    /* 입력창 (Input, Select, Textarea) 스타일 */
+    input[type="text"], select, textarea {
+        width: 100%;
+        padding: 12px;
+        background-color: #0000AA;
+        color: #FFFFFF;
+        border: 2px solid #FFFFFF;
+        font-family: 'NeoDunggeunmo', monospace;
+        font-size: 1.1rem;
+    }
+    input[type="text"]:focus, select:focus, textarea:focus {
+        outline: none;
+        border-color: #FFFF00;
+        background-color: #000055;
+    }
+
+    /* select 옵션 배경색 처리 */
+    option { background-color: #0000AA; color: #FFFFFF; }
+
+    /* 하단 버튼 영역 */
+    .btn-group {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 40px;
+        border-top: 1px dashed #FFFFFF;
+        padding-top: 20px;
+    }
+
+    .btn {
+        display: inline-block;
+        padding: 8px 20px;
+        background-color: #0000AA; color: #FFFFFF;
+        border: 2px solid #FFFFFF; 
+        font-family: 'NeoDunggeunmo', monospace;
+        font-size: 1.1rem; cursor: pointer;
+        text-align: center;
+        text-decoration: none;
+    }
+    .btn:hover { background-color: #00FFFF; color: #0000AA; border-color: #00FFFF; }
+</style>
 
 </head>
 
 
 <body>
 
-	<div class="container mt-5">
+	<div class="container">
 
-		<h1 class="mb-4">게시글 수정</h1>
-
+		<h1>게시글 수정</h1>
 
 		<!-- 오류 메시지 -->
 		<%
@@ -30,94 +126,52 @@
 
 		if (message != null) {
 		%>
-
-		<div class="alert alert-danger">
-
-			<%=message%>
-
+		<div class="alert">
+			[안내] <%=message%>
 		</div>
-
 		<%
 		}
 		%>
 
-
-
+		<!-- 🚨 form 로직은 유지하되, 모든 입력칸에 required 속성 추가 -->
 		<form action="<%=request.getContextPath()%>/update.do" method="post">
 
-
-			<!-- 게시글 번호 -->
+			<!-- 게시글 번호 (숨겨서 전송) -->
 			<input type="hidden" name="boardId" value="${board.boardId}">
 
-
-
 			<!-- 카테고리 -->
-			<div class="mb-3">
-
-				<label class="form-label"> 카테고리 </label> <select name="category"
-					class="form-select">
-
-
-					<option value="suggestion"
-						${board.category == 'suggestion' ? 'selected' : ''}>건의사항
-
-					</option>
-
-
-					<option value="free" ${board.category == 'free' ? 'selected' : ''}>
-
-						잡담</option>
-
-
-					<option value="code" ${board.category == 'code' ? 'selected' : ''}>
-
-						코드리뷰</option>
-
+			<div class="form-group">
+				<label>카테고리</label> 
+                <select name="category" required>
+					<option value="suggestion" ${board.category == 'suggestion' ? 'selected' : ''}>1. 건의사항</option>
+					<option value="free" ${board.category == 'free' ? 'selected' : ''}>2. 잡담게시판</option>
+					<option value="code" ${board.category == 'code' ? 'selected' : ''}>3. 코드리뷰</option>
 				</select>
-
 			</div>
-
-
 
 			<!-- 제목 -->
-			<div class="mb-3">
-
-				<label class="form-label"> 제목 </label> <input type="text"
-					name="title" value="${board.title}" class="form-control">
-
+			<div class="form-group">
+				<label>제목</label> 
+                <input type="text" name="title" value="${board.title}" required placeholder="제목을 입력하십시오.">
 			</div>
-
-
 
 			<!-- 작성자 -->
-			<div class="mb-3">
-
-				<label class="form-label"> 작성자 </label> <input type="text"
-					name="writer" value="${board.writer}" class="form-control">
-
+			<div class="form-group">
+				<label>작성자</label> 
+                <input type="text" name="writer" value="${board.writer}" required placeholder="작성자를 입력하십시오.">
 			</div>
-
-
 
 			<!-- 내용 -->
-			<div class="mb-3">
-
-				<label class="form-label"> 내용 </label>
-
-
-				<textarea name="content" class="form-control" rows="10">${board.content}</textarea>
-
+			<div class="form-group">
+				<label>내용</label>
+				<textarea name="content" rows="10" required placeholder="내용을 입력하십시오.">${board.content}</textarea>
 			</div>
 
-
-
-			<button type="submit" class="btn btn-warning">수정완료</button>
-
-
-
-			<a
-				href="<%=request.getContextPath()%>/detail.do?boardId=${board.boardId}"
-				class="btn btn-secondary"> 취소 </a>
+			<!-- 하단 버튼 영역 -->
+			<div class="btn-group">
+                <a href="<%=request.getContextPath()%>/detail.do?boardId=${board.boardId}" class="btn">취소(C)</a>
+				<button type="submit" class="btn">수정완료(Enter)</button>
+			</div>
 
 		</form>
 
