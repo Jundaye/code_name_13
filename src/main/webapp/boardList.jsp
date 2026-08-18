@@ -60,13 +60,30 @@
 						<td>${status.count}</td>
 
 
-						<td>${board.category}</td>
+						<td><c:choose>
+
+								<c:when test="${board.category == 'code'}">
+            						코드리뷰
+        						</c:when>
+
+								<c:when test="${board.category == 'suggestion'}">
+            						건의사항
+        						</c:when>
+
+								<c:when test="${board.category == 'free'}">
+            						잡담
+        						</c:when>
+
+								<c:otherwise>
+            					${board.category}
+        						</c:otherwise>
+        						
+								</c:choose></td>
 
 
-						<td><a
-							href="${pageContext.request.contextPath}/detail.do?boardId=${board.boardId}">
-
-								${board.title} </a></td>
+						<td><a href="${pageContext.request.contextPath}/detail.do?boardId=${board.boardId}">
+    							${board.title}
+						</a></td>
 
 
 						<td>${board.writer}</td>
