@@ -46,3 +46,10 @@ CREATE TABLE board_like (
     FOREIGN KEY (user_id)
         REFERENCES users(user_id)
 );
+
+CREATE TABLE song_table (
+    song_id INT AUTO_INCREMENT PRIMARY KEY,
+    video_id VARCHAR(50) NOT NULL,
+    user_id VARCHAR(50),
+    reg_date DATETIME DEFAULT CURRENT_TIMESTAMP
+);

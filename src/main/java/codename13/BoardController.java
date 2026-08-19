@@ -29,11 +29,16 @@ public class BoardController extends HttpServlet {
 		switch (requestUri) {
 		
 		// ==========================
-		// 1. 메인 화면 (핫 게시글 로딩)
+		// 1. 메인 화면 (핫 게시글 & 노래 로딩)
 		// ==========================
 		case "/main.do": {
 			List<BoardDTO> hotBoardList = BoardDAO.getHotBoardList();
 			req.setAttribute("hotBoardList", hotBoardList);
+
+			// 💡 메모리가 아닌 DB(SongDAO)에서 오늘의 노래를 꺼내옵니다!
+			String todaySong = SongDAO.getTodayVideoId();
+			req.setAttribute("todaySong", todaySong);
+
 			page = "index.jsp";
 			break;
 		}
@@ -88,7 +93,18 @@ public class BoardController extends HttpServlet {
 		// 5. 상세보기
 		// ==========================
 		case "/detail.do": {
+			// 🚨 로그인 체크 추가: 비로그인 상태면 알럿 띄우고 뒤로 가기
+			HttpSession session = req.getSession();
+			if (session.getAttribute("loginUser") == null) {
+				resp.setContentType("text/html; charset=UTF-8");
+				PrintWriter out = resp.getWriter();
+				out.println("<script>alert('로그인 후 글 확인이 가능합니다.'); history.back();</script>");
+				out.flush();
+				return;
+			}
+
 			int boardId = Integer.parseInt(req.getParameter("boardId"));
+
 			BoardDAO.increaseView(boardId);
 			BoardDTO board = BoardDAO.getById(boardId);
 			List<CommentDTO> comments = CommentDAO.getListByBoardId(boardId);
@@ -105,6 +121,19 @@ public class BoardController extends HttpServlet {
 		case "/updateForm.do": {
 			int boardId = Integer.parseInt(req.getParameter("boardId"));
 			BoardDTO board = BoardDAO.getById(boardId);
+
+			HttpSession session = req.getSession();
+			UserDTO loginUser = (UserDTO) session.getAttribute("loginUser");
+
+			// 로그인하지 않았거나 작성자가 아닌 경우 알럿 출력 후 이전 페이지로 이동
+			if (loginUser == null || !loginUser.getUserName().equals(board.getWriter())) {
+				resp.setContentType("text/html; charset=UTF-8");
+				PrintWriter out = resp.getWriter();
+				out.println("<script>alert('작성자가 아니면 수정/삭제할 수 없습니다!'); history.back();</script>");
+				out.flush();
+				return;
+			}
+
 			req.setAttribute("board", board);
 			page = "boardUpdate.jsp";
 			break;
@@ -145,6 +174,20 @@ public class BoardController extends HttpServlet {
 		// ==========================
 		case "/delete.do": {
 			int boardId = Integer.parseInt(req.getParameter("boardId"));
+			BoardDTO board = BoardDAO.getById(boardId);
+
+			HttpSession session = req.getSession();
+			UserDTO loginUser = (UserDTO) session.getAttribute("loginUser");
+
+			// 로그인하지 않았거나 작성자가 아닌 경우 알럿 출력 후 이전 페이지로 이동
+			if (loginUser == null || !loginUser.getUserName().equals(board.getWriter())) {
+				resp.setContentType("text/html; charset=UTF-8");
+				PrintWriter out = resp.getWriter();
+				out.println("<script>alert('작성자가 아니면 수정/삭제할 수 없습니다!'); history.back();</script>");
+				out.flush();
+				return;
+			}
+
 			BoardDAO.deleteBoard(boardId);
 			resp.sendRedirect(req.getContextPath() + "/list.do");
 			return;
@@ -180,11 +223,13 @@ public class BoardController extends HttpServlet {
 		}
 		
 		// ==========================
-		// 10. 오늘의 노래 조회 
+		// 10. 오늘의 노래 조회
 		// ==========================
 		case "/getTodaySong.do": {
 			resp.setContentType("text/plain;charset=UTF-8");
-			String todaySong = (String) req.getServletContext().getAttribute("todaySong");
+
+			// 💡 DB(SongDAO)에서 노래를 확인합니다.
+			String todaySong = SongDAO.getTodayVideoId();
 
 			if (todaySong == null) {
 				resp.getWriter().print("NONE");
@@ -195,23 +240,34 @@ public class BoardController extends HttpServlet {
 		}
 
 		// ==========================
-		// 11. 오늘의 노래 등록
+		// 11. 오늘의 노래 등록 (DB에 저장!)
 		// ==========================
 		case "/songRegister.do": {
 			resp.setContentType("text/plain;charset=UTF-8");
+
 			HttpSession session = req.getSession();
-			if (session.getAttribute("loginUser") == null) {
+			UserDTO loginUser = (UserDTO) session.getAttribute("loginUser");
+
+			if (loginUser == null) {
 				resp.getWriter().print("GUEST");
 				return;
 			}
 
 			String videoId = req.getParameter("videoId");
-			String currentSong = (String) req.getServletContext().getAttribute("todaySong");
 
-			if (currentSong == null) {
-				req.getServletContext().setAttribute("todaySong", videoId);
+			// 💡 DB(SongDAO)에 오늘 등록된 노래가 있는지 개수를 물어봅니다.
+			int todaySongCount = SongDAO.getTodaySongCount();
+
+			if (todaySongCount == 0) {
+				// 💡 아무도 등록하지 않았다면 DTO에 담아서 DB에 INSERT!
+				SongDTO song = new SongDTO();
+				song.setVideoId(videoId);
+				song.setUserId(loginUser.getUserId());
+
+				SongDAO.insertSong(song);
 				resp.getWriter().print("SUCCESS");
 			} else {
+				// 누군가 간발의 차이로 먼저 DB에 등록함
 				resp.getWriter().print("ALREADY_EXIST");
 			}
 			return;

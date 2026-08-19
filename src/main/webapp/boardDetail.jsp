@@ -12,9 +12,6 @@
 
 <title>게시글 상세보기</title>
 
-<!-- 기존 외부 CSS는 주석 처리하거나 지워도 무방합니다 (스타일 충돌 방지) -->
-<!-- <link rel="stylesheet" href="board.css" type="text/css" media="screen" /> -->
-
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"
 	integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
 	crossorigin="anonymous">
@@ -142,8 +139,8 @@
 		<!-- 이동 메뉴 -->
 		<!-- ======================== -->
 
-		[ <a href="main.do"> 초기화면(T) </a> ] &nbsp;
-		[ <a href="list.do"> 목록으로(L) </a> ]
+		[ <a href="${pageContext.request.contextPath}/main.do">초기화면(T) </a> ] &nbsp; 
+		[ <a href="${pageContext.request.contextPath}/list.do?category=${board.category}">목록으로(L) </a> ]
 
 		<p>
 
